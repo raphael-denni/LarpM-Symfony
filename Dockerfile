@@ -1,29 +1,61 @@
+FROM dunglas/frankenphp:1-php8.4-bookworm AS base
+WORKDIR /app
+
+RUN install-php-extensions \
+        pdo_mysql \
+        intl \
+        zip \
+        sockets \
+        calendar \
+        mbstring \
+        exif \
+        gd \
+        xsl \
+        mysqli \
+        opcache
+
+
+FROM composer:2 AS build
+WORKDIR /build
+
+COPY composer.json composer.lock ./
+RUN APP_ENV=prod composer install \
+        --no-dev \
+        --no-interaction \
+        --no-progress \
+        --prefer-dist \
+        --no-scripts \
+        --no-autoloader \
+        --ignore-platform-reqs
+
+COPY . .
+RUN APP_ENV=prod composer dump-autoload --classmap-authoritative --no-dev
+
+
+FROM base AS prod
+ENV APP_ENV=prod \
+    APP_DEBUG=0
+
+ARG USER=appuser
+
+COPY docker/php/php.ini /usr/local/etc/php/conf.d/zzz-app.ini
+COPY --from=build /build /app
+
+RUN DATABASE_URL="sqlite:///:memory:" php bin/console cache:clear --no-warmup \
+    && DATABASE_URL="sqlite:///:memory:" php bin/console cache:warmup \
+    && useradd ${USER} \
+    && setcap CAP_NET_BIND_SERVICE=+eip /usr/local/bin/frankenphp \
+    && chown -R ${USER}:${USER} /app /config/caddy /data/caddy
+
+USER ${USER}
+
+
 FROM ghcr.io/symfony-cli/symfony-cli:v5 AS symfony-cli
 
-FROM php:8.4-cli AS dev
-WORKDIR /var/www/html
-
-# System deps, PHP extension build deps, and PHP extensions.
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        gnupg g++ procps openssl git zip unzip locales \
-        zlib1g-dev libzip-dev libfreetype6-dev libpng-dev libwebp-dev libxpm-dev \
-        libpq-dev libjpeg62-turbo-dev libicu-dev libgd-dev libonig-dev libxslt1-dev \
-        acl vim wget nodejs npm apt-transport-https lsb-release ca-certificates \
-    && echo "en_US.UTF-8 UTF-8" > /etc/locale.gen \
-    && echo "fr_FR.UTF-8 UTF-8" >> /etc/locale.gen \
-    && locale-gen \
-    && docker-php-ext-configure intl \
-    && docker-php-ext-configure gd --enable-gd --with-freetype --with-jpeg --with-webp \
-    && docker-php-ext-install -j"$(nproc)" \
-        pdo pdo_mysql opcache intl zip calendar dom mbstring exif gd xsl mysqli \
-    && pecl install apcu && docker-php-ext-enable apcu \
-    && corepack enable && corepack prepare yarn@stable --activate \
-    && apt-get purge -y --auto-remove g++ \
-    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+FROM base AS dev
+ENV APP_ENV=dev \
+    APP_DEBUG=1
 
 # Install Symfony CLI and Composer
 COPY --link --from=symfony-cli /usr/local/bin/symfony /usr/local/bin/symfony
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer*
-
-EXPOSE 8000
-CMD ["symfony", "server:start", "--no-tls", "--port=8000", "--allow-http"]
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer

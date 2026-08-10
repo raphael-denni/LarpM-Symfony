@@ -43,12 +43,11 @@ docker compose exec frankenphp composer install
 
 ### 5- Accéder au site
 
-Se rendre sur [http://localhost:8080/](http://localhost:8080/)
+Se rendre sur [localhost/](http://localhost/)
 
-Vous pouvez utiliser un reverse proxy comme Caddy pour accéder plutot avec l'url [http://larpmanager.test](http://larpmanager.test)
-Pour cela, il faudra modifier votre fichier "hosts" /etc/hosts et y ajouter:
+Un reverse proxy sur [larpmanager.test](http://larpmanager.test) est aussi disponible si vous avez configuré votre /etc/hosts:
 
-```bash
+```text
 127.0.0.1 larpmanager.test
 ```
 
@@ -58,7 +57,7 @@ On utilise la même version que sur le serveur de production : Mysql 8.0+
 
 ```
 - host : localhost
-- port : 30202
+- port : 3306
 - user : admin
 - pass : password
 - database : larpm
