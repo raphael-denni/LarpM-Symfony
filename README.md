@@ -38,7 +38,7 @@ docker compose up -d
 ### 4- Charger une première fois les librairies externe (vendor)
 
 ```bash
-docker compose exec frankenphp composer install
+docker compose exec webserver composer install
 ```
 
 ### 5- Accéder au site
@@ -72,20 +72,20 @@ Tous les mails sont catché par mailpit et consultable sur : http://localhost:80
 Les commandes symfony sont disponibles via:
 
 ```bash
-   docker compose exec frankenphp symfony
+   docker compose exec webserver symfony
 ```
 
 Ou via:
 
 ```bash
-docker compose exec frankenphp php bin/console
+docker compose exec webserver php bin/console
 ```
 
 ## Voir les logs
 
 ```bash
 docker compose logs
-docker compose logs frankenphp
+docker compose logs webserver
 docker compose logs mailer
 docker compose logs database
 ```
@@ -129,17 +129,17 @@ Noter: `--compact` pour un fichier sans commentaire, et `--no-create-db` pour é
 
 ```bash
 # Tous les tests
-docker compose exec frankenphp ./vendor/bin/phpunit
+docker compose exec webserver ./vendor/bin/phpunit
 
 # Un fichier précis
-docker compose exec frankenphp ./vendor/bin/phpunit tests/Unit/Service/ConditionsServiceTest.php
+docker compose exec webserver ./vendor/bin/phpunit tests/Unit/Service/ConditionsServiceTest.php
 
 # Un groupe (unit ou integration)
-docker compose exec frankenphp ./vendor/bin/phpunit --group unit
-docker compose exec frankenphp ./vendor/bin/phpunit --group integration
+docker compose exec webserver ./vendor/bin/phpunit --group unit
+docker compose exec webserver ./vendor/bin/phpunit --group integration
 
 # Avec sortie lisible (noms des tests)
-docker compose exec frankenphp ./vendor/bin/phpunit --testdox
+docker compose exec webserver ./vendor/bin/phpunit --testdox
 ```
 
 ### Structure des tests
@@ -319,11 +319,11 @@ docker compose run --rm composer recipes:update
 Nettoyer et recharger le cache
 
 ```bash
-docker compose exec frankenphp php bin/console cache:clear
+docker compose exec webserver php bin/console cache:clear
 ```
 
 ```bash
-docker compose exec frankenphp php bin/console cache:warmup
+docker compose exec webserver php bin/console cache:warmup
 ```
 
 Si le clear:cache échoue :
@@ -335,19 +335,19 @@ php -d memory_limit=-1 bin/console cache:clear
 ### Exécuter les migrations Doctrine
 
 ```bash
-docker compose exec frankenphp php bin/console doctrine:migrations:migrate
+docker compose exec webserver php bin/console doctrine:migrations:migrate
 ```
 
 ### Lancer un serveur de développement (si nécessaire)
 
 ```bash
-docker compose exec frankenphp php bin/console server:run
+docker compose exec webserver php bin/console server:run
 ```
 
 ### Lancer un worker Messenger
 
 ```bash
-docker compose exec frankenphp php bin/console messenger:consume async -vv
+docker compose exec webserver php bin/console messenger:consume async -vv
 ```
 
 ### Compiler les assets
@@ -355,20 +355,20 @@ docker compose exec frankenphp php bin/console messenger:consume async -vv
 Voir https://symfony.com/doc/current/frontend/asset_mapper.html
 
 ```bash
-docker compose exec frankenphp php bin/console asset-map:compile
+docker compose exec webserver php bin/console asset-map:compile
 ```
 
 ### Debug les assets
 
 ```bash
-docker compose exec frankenphp php bin/console debug:asset-map
+docker compose exec webserver php bin/console debug:asset-map
 ```
 
 ### Maj ou install de l'importmap
 
 ```bash
-docker compose exec frankenphp php bin/console importmap:update
-docker compose exec frankenphp php bin/console importmap:install
+docker compose exec webserver php bin/console importmap:update
+docker compose exec webserver php bin/console importmap:install
 ```
 
 ### Maj service du docker compose
@@ -402,7 +402,7 @@ docker compose run --rm composer update "symfony/*" --with-all-dependencies
 Si manquant:
 
 ```bash
-docker compose exec frankenphp symfony composer req "imagine/imagine:^1.2"
+docker compose exec webserver symfony composer req "imagine/imagine:^1.2"
 ```
 
 ### Ajout de Autocomplete
@@ -418,7 +418,7 @@ docker compose run --rm composer require symfony/ux-autocomplete
 
 ```bash
 PHP_CS_FIXER_IGNORE_ENV=1 ./vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.dist.php --verbose --path-mode=intersection *
-docker compose exec frankenphp ./vendor/bin/php-cs-fixer fix --config .php-cs-fixer.dist.php
+docker compose exec webserver ./vendor/bin/php-cs-fixer fix --config .php-cs-fixer.dist.php
 ```
 
 ## Mago
