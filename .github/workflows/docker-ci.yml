@@ -32,7 +32,7 @@ jobs:
             - name: docker compose config (prod)
               env:
                   WEBSERVER_IMAGE: larpm-symfony:local
-              run: docker compose -f docker-compose.prod.yml config -q
+              run: docker compose -f docker-compose.yml -f docker-compose.prod.yml config -q
 
     build:
         name: Build image (target=prod)

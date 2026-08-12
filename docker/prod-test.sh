@@ -22,4 +22,4 @@ MAILER_DSN=smtp://mailer:1025
 EOF
 
 export WEBSERVER_IMAGE=larpm-symfony:local
-docker compose -f docker-compose.prod.yml up -d
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
